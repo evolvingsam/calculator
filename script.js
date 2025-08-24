@@ -11,27 +11,38 @@ buttons.addEventListener("click", (e) => {
             history.textContent = " ";
             break;
         
-             case "del":
+        case "del":
+            // If only one character left, reset to "0"
             if (operation.textContent.length === 1) {
-                operation.textContent = "0";
-            } else if (isLastCharOperator() || operation.textContent.split(" ").at(-1).length === 1) {
-                operation.textContent = operation.textContent.slice(0, -2);
-            } else {
-                operation.textContent = operation.textContent.slice(0, -1);
+            operation.textContent = "0";
+            } 
+            // If last part is an operator (with space), remove last two chars
+            else if (isLastCharOperator() || operation.textContent.trim().split(" ").at(-1).length === 1 && ops.includes(operation.textContent.trim().split(" ").at(-1).replace(/[×÷]/g, m => m === "×" ? "*" : "/"))) {
+            operation.textContent = operation.textContent.slice(0, -2).trim();
+            if (operation.textContent === "") operation.textContent = "0";
+            } 
+            // Otherwise, remove last character
+            else {
+            operation.textContent = operation.textContent.slice(0, -1);
+            if (operation.textContent === "") operation.textContent = "0";
             }
-            
             break;
         case "percent":
-            if (isNegativeSign()) {
-                break;
-            }
+            if (isNegativeSign()) break;
 
+            // Remove trailing operator before adding percent
             if (isLastCharOperator()) {
-                operation.textContent = operation.textContent.slice(0, -2);
+            operation.textContent = operation.textContent.slice(0, -2);
             }
 
-            operation.textContent += "%";
+            // Prevent multiple consecutive percent signs
+            if (toAdd("%")) {
+                operation.textContent += " %";
+
+            }
+        
             break;
+
         case "plus":
             if (isNegativeSign()) {
                 break;
@@ -191,7 +202,13 @@ function isNegativeSign() {
         return true;
     }
 
-    if (operation.textContent.slice(-1) === "-" && ops.includes(operation.textContent.slice(-3).split(" ")[0])) {
+    // Check if the last character is a negative sign after an operator
+    const parts = operation.textContent.trim().split(" ");
+    if (
+        parts.length > 1 &&
+        parts[parts.length - 1] === "-" &&
+        ops.includes(parts[parts.length - 2].replace(/[×÷]/g, m => m === "×" ? "*" : "/"))
+    ) {
         return true;
     }
 
@@ -206,4 +223,11 @@ function isDecimalInUse() {
     }
 
     return false;
+}
+
+
+function toAdd(op) {
+    if (operation.textContent.slice(-1) !== op) {
+            return true;
+    }
 }
