@@ -143,14 +143,18 @@ body {
 }  
 
 #clear {
-    color: #ddc145;
+    color: #d3af11;
 }
 
 #equal button:active {
     background-color: #0d3744;
 }
 
-.github-link {
-    text-decoration: none;
+a {
     color: inherit;
+}
+
+#attr {
+    font-size: 0.8em;
+    color: #203e5e;
 }
