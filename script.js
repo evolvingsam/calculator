@@ -1,4 +1,4 @@
-const ops = "+-/*";
+const ops = "+-×÷";
 isOutputPreviousAnswer = false;
 let operation = document.querySelector("#operation");
 let history = document.querySelector("#history");
@@ -43,7 +43,7 @@ buttons.addEventListener("click", (e) => {
         
             break;
 
-        case "plus":
+        case "add":
             if (isNegativeSign()) {
                 break;
             }
@@ -54,7 +54,7 @@ buttons.addEventListener("click", (e) => {
 
             operation.textContent += " +";
             break;
-        case "minus":
+        case "subtract":
             if (isNegativeSign()) {
                 break;
             }
@@ -73,10 +73,12 @@ buttons.addEventListener("click", (e) => {
             
             if (isLastCharOperator()) {
                 operation.textContent = operation.textContent.slice(0, -2);
-            } 
-
+                console.log("good");
+            }
+            console.log(operation.textContent);
             operation.textContent += " ×";
             break;
+
         case "divide":
             if (isNegativeSign()) {
                 break;
@@ -88,7 +90,7 @@ buttons.addEventListener("click", (e) => {
 
             operation.textContent += " ÷";
             break;
-        case "decimal":
+        case "dot":
             if (isOutputEmpty() || !isLastCharOperator()) {
                 if (!isDecimalInUse()) {
                     operation.textContent += ".";
@@ -108,6 +110,7 @@ buttons.addEventListener("click", (e) => {
         case "7":
         case "8":
         case "9":
+        case "00":
             if (isOutputPreviousAnswer) {
                 operation.textContent = "0";
             }
@@ -123,12 +126,13 @@ buttons.addEventListener("click", (e) => {
 
             break;
         case "equal":
+            console.log(operation.textContent);
             if (isLastCharOperator()) {
                 break;
             }
 
             history.textContent = operation.textContent + " =";
-            operation.textContent = parseoperation(operation.textContent);
+            operation.textContent = evalPostfix(toPosfix(tokenize(operation.textContent)));
             isOutputPreviousAnswer = true;
             return;
     }
@@ -139,52 +143,12 @@ buttons.addEventListener("click", (e) => {
     
 })
 
-function add(a, b) {
-    return a + b;
-}
-
-function subtract(a, b) {
-    return a - b;
-}
-
-function divide(a, b) {
-    let value = a / b;
-    const rounded = Math.ceil(value * 100) / 100;
-    return Number.isInteger(rounded) ? rounded : rounded.toFixed(2);
-}
-
-function multiply(a, b) {
-    return a * b;
-}
-
-function percent(a) {
-    return a / 100;
-}
-
-function operate(op, a, b) {
-    switch(op) {
-        case '+':
-            return add(a, b);
-        case '-':
-            return subtract(a, b);
-        case '*':
-            return multiply(a, b);
-        case '/':
-            return divide(a, b);
-        case '%':
-            return percent(a, b);
-        default:
-            throw new Error('Unsupported operator: ' + op);
-    }
-}
-
-
 function isLastCharOperator() {
     let stroperation = operation.textContent;
     if (ops.includes(stroperation.charAt(stroperation.length - 1))) {
         return true;
     } else {
-        false;
+        return false;
     }
 }
 
@@ -230,4 +194,79 @@ function toAdd(op) {
     if (operation.textContent.slice(-1) !== op) {
             return true;
     }
+}
+function tokenize(expr) {
+  return expr.match(/\d+(\.\d+)?|[+\-×÷%()]/g);
+}
+
+
+function precedence(op) {
+    if (op == "+" || op == "-") return 1;
+    if (op == "%" || op == "×" || op == "÷") return 2;
+    return 0;
+}
+
+function toPosfix(tokens) {
+    let output = [];
+    let stack = [];
+
+    for (let token of tokens) {
+        if (!isNaN(token)) {
+            output.push(parseFloat(token));
+        } else {
+            while (
+                stack.length > 0 &&
+                precedence(stack[stack.length] -1) >= precedence(token)
+            ) {
+                output.push(stack.pop());
+            }
+            stack.push(token);
+        }
+    }
+
+    while (stack.length > 0) {
+        output.push(stack.pop())
+
+    }
+    return output;
+
+}
+
+function evalPostfix(postfix) {
+  let stack = [];
+
+  for (let token of postfix) {
+    if (typeof token === "number") {
+      stack.push(token);
+    } else {
+      let b = stack.pop();
+      let a = stack.pop();
+
+      switch (token) {
+        case "+":
+          stack.push(a + b);
+          break;
+        case "-":
+          stack.push(a - b);
+          break;
+        case "×":
+          stack.push(a * b);
+          break;
+        case "÷":
+          if (b === 0) {
+            throw new Error("Division by zero is not allowed");
+          }
+          stack.push(a / b);
+          break;
+        case "%":
+          if (b === 0) {
+            throw new Error("Modulo by zero is not allowed");
+          }
+          stack.push(a % b);
+          break;
+      }
+    }
+  }
+
+  return stack.pop();
 }
