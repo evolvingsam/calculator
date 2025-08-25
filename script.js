@@ -37,8 +37,8 @@ buttons.addEventListener("click", (e) => {
 
             // Prevent multiple consecutive percent signs
             if (toAdd("%")) {
+                
                 operation.textContent += " %";
-
             }
         
             break;
@@ -118,10 +118,8 @@ buttons.addEventListener("click", (e) => {
                 operation.textContent = e.target.id;
             } else if (isLastCharOperator() && !isNegativeSign()) {
                 operation.textContent += " " + e.target.id;
-            } else if (operation.textContent.slice(-1) === "%") { 
-                operation.textContent += " × " + e.target.id;
             } else {
-                operation.textContent += e.target.id;
+                operation.textContent += " " + e.target.id;
             }
 
             break;
